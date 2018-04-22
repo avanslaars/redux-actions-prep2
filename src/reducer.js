@@ -38,11 +38,11 @@ export const {
 } = createActions(
   {
     UPDATE_CURRENT: fixCase,
+    ADD_TODO: [x => x, (_, name) => ({ name })],
     SHOW_LOADER: () => true,
     HIDE_LOADER: () => false
   },
   LOAD_TODOS,
-  ADD_TODO,
   REPLACE_TODO,
   REMOVE_TODO
 )
@@ -50,20 +50,30 @@ export const {
 export const fetchTodos = () => {
   return dispatch => {
     dispatch(showLoader())
-    getTodos().then(todos => {
-      dispatch(loadTodos(todos))
-      dispatch(hideLoader())
-    })
+    getTodos()
+      .then(todos => {
+        dispatch(loadTodos(todos))
+        dispatch(hideLoader())
+      })
+      .catch(err => {
+        dispatch(loadTodos(err))
+        dispatch(hideLoader())
+      })
   }
 }
 
 export const saveTodo = name => {
   return dispatch => {
     dispatch(showLoader())
-    createTodo(name).then(res => {
-      dispatch(addTodo(res))
-      dispatch(hideLoader())
-    })
+    createTodo(name)
+      .then(res => {
+        dispatch(addTodo(res))
+        dispatch(hideLoader())
+      })
+      .catch(err => {
+        dispatch(addTodo(err, name))
+        dispatch(hideLoader())
+      })
   }
 }
 
@@ -103,11 +113,17 @@ export const getVisibleTodos = (todos, filter) => {
 
 const reducer = handleActions(
   {
-    ADD_TODO: (state, action) => ({
-      ...state,
-      currentTodo: '',
-      todos: state.todos.concat(action.payload)
-    }),
+    ADD_TODO: {
+      next: (state, action) => ({
+        ...state,
+        currentTodo: '',
+        todos: state.todos.concat(action.payload)
+      }),
+      throw: (state, action) => ({
+        ...state,
+        message: `There was an error saving: ${action.meta.name}`
+      })
+    },
     LOAD_TODOS: {
       next: (state, action) => ({ ...state, todos: action.payload }),
       throw: (state, action) => ({

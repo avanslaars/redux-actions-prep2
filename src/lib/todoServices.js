@@ -1,14 +1,11 @@
 const baseUrl = process.env.REACT_APP_BASE_URL
 
 export const getTodos = () => {
-  return (
-    fetch(baseUrl)
-      .then(res => res.json())
-      // .then(() => {
-      //   throw new Error('Boom')
-      // })
-      .catch(err => err)
-  )
+  return fetch(baseUrl).then(res => res.json())
+  // .then(() => {
+  //   throw new Error('Boom')
+  // })
+  // .catch(err => err)
 }
 
 export const createTodo = name => {
@@ -19,7 +16,12 @@ export const createTodo = name => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ name: name, isComplete: false })
-  }).then(res => res.json())
+  })
+    .then(res => res.json())
+    .then(() => {
+      throw new Error('Boom')
+    })
+  // .catch(err => err)
 }
 
 export const updateTodo = todo => {
