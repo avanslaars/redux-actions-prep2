@@ -4,7 +4,7 @@ import {
   updateTodo,
   destroyTodo
 } from './lib/todoServices'
-import { createActions, handleAction } from 'redux-actions'
+import { createActions, handleActions } from 'redux-actions'
 
 const initState = {
   todos: [],
@@ -101,40 +101,32 @@ export const getVisibleTodos = (todos, filter) => {
   }
 }
 
-const addTodoReducer = handleAction(
-  ADD_TODO,
-  (state, action) => ({
-    ...state,
-    currentTodo: '',
-    todos: state.todos.concat(action.payload)
-  }),
+const reducer = handleActions(
+  {
+    ADD_TODO: (state, action) => ({
+      ...state,
+      currentTodo: '',
+      todos: state.todos.concat(action.payload)
+    }),
+    LOAD_TODOS: (state, action) => ({ ...state, todos: action.payload }),
+    UPDATE_CURRENT: (state, action) => ({
+      ...state,
+      currentTodo: action.payload
+    }),
+    REPLACE_TODO: (state, action) => ({
+      ...state,
+      todos: state.todos.map(
+        t => (t.id === action.payload.id ? action.payload : t)
+      )
+    }),
+    REMOVE_TODO: (state, action) => ({
+      ...state,
+      todos: state.todos.filter(t => t.id !== action.payload)
+    }),
+    SHOW_LOADER: (state, action) => ({ ...state, isLoading: action.payload }),
+    HIDE_LOADER: (state, action) => ({ ...state, isLoading: action.payload })
+  },
   initState
 )
 
-export default (state = initState, action) => {
-  switch (action.type) {
-    case ADD_TODO:
-      return addTodoReducer(state, action)
-    case LOAD_TODOS:
-      return { ...state, todos: action.payload }
-    case UPDATE_CURRENT:
-      return { ...state, currentTodo: action.payload }
-    case REPLACE_TODO:
-      return {
-        ...state,
-        todos: state.todos.map(
-          t => (t.id === action.payload.id ? action.payload : t)
-        )
-      }
-    case REMOVE_TODO:
-      return {
-        ...state,
-        todos: state.todos.filter(t => t.id !== action.payload)
-      }
-    case SHOW_LOADER:
-    case HIDE_LOADER:
-      return { ...state, isLoading: action.payload }
-    default:
-      return state
-  }
-}
+export default reducer
