@@ -4,7 +4,7 @@ import {
   updateTodo,
   destroyTodo
 } from './lib/todoServices'
-import { createActions, handleActions } from 'redux-actions'
+import { createActions, handleActions, combineActions } from 'redux-actions'
 
 const initState = {
   todos: [],
@@ -108,7 +108,13 @@ const reducer = handleActions(
       currentTodo: '',
       todos: state.todos.concat(action.payload)
     }),
-    LOAD_TODOS: (state, action) => ({ ...state, todos: action.payload }),
+    LOAD_TODOS: {
+      next: (state, action) => ({ ...state, todos: action.payload }),
+      throw: (state, action) => ({
+        ...state,
+        message: 'There was an issue loading todos'
+      })
+    },
     UPDATE_CURRENT: (state, action) => ({
       ...state,
       currentTodo: action.payload
@@ -123,8 +129,10 @@ const reducer = handleActions(
       ...state,
       todos: state.todos.filter(t => t.id !== action.payload)
     }),
-    SHOW_LOADER: (state, action) => ({ ...state, isLoading: action.payload }),
-    HIDE_LOADER: (state, action) => ({ ...state, isLoading: action.payload })
+    [combineActions(SHOW_LOADER, HIDE_LOADER)]: (state, action) => ({
+      ...state,
+      isLoading: action.payload
+    })
   },
   initState
 )
